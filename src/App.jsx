@@ -11,23 +11,23 @@ const Item = (function() {
 
 const Right = (function() {
   const Right = styled.div`
-    flex: auto;
+    flex: 2;
   `
 
-  const Detail = styled.div`
+  const Flex = styled.div`
     display: flex;
-    align-items: center;
     height: 50px;
+    flex-wrap: wrap;
   `
 
   const Label = styled.label`
     display: inline-block;
-    margin-left: 20px;
     margin-right: 10px;
   `
 
   const Button = styled.button`
     display: inline-block;
+    flex: none;
     margin: 0 5px;
   `
 
@@ -44,86 +44,169 @@ const Right = (function() {
     display: inline-block;
   `
 
-  return (state, setState) => (
+  const FlexItem = styled.div`
+    display: flex;
+    margin-right: 20px;
+    align-items: center;
+    flex: none;
+  `
+
+  return ({ state, setState }) => (
     <Right>
-      <Detail>
-        <Label>项目数量：</Label>
-        <Number>{state.count}</Number>
-        <Button onClick={e => setState({ count: state.count + 1 })}>+</Button>
-        <Button onClick={e => setState({ count: state.count ? state.count - 1 : 0 })}>-</Button>
-        <Label>项目长度：</Label>
-        <Input
-          type="range"
-          min={100}
-          max={500}
-          onChange={e => setState({ width: e.target.value })}
-        />
-        <Number>{state.width}</Number>
-        <Span>px</Span>
-        <Label>项目宽度：</Label>
-        <Input
-          type="range"
-          min={100}
-          max={500}
-          onChange={e => setState({ height: e.target.value })}
-        />
-        <Number>{state.height}</Number>
-        <Span>px</Span>
-      </Detail>
+      <Flex>
+        <FlexItem>
+          <Label>项目数量：</Label>
+          <Number>{state.count}</Number>
+          <Button onClick={e => setState({ count: state.count + 1 })}>+</Button>
+          <Button onClick={e => setState({ count: state.count ? state.count - 1 : 0 })}>-</Button>
+        </FlexItem>
+        <FlexItem>
+          <Label>项目长度：</Label>
+          <Input
+            type="range"
+            min={100}
+            max={500}
+            onChange={e => setState({ width: e.target.value })}
+          />
+          <Number>{state.width}</Number>
+          <Span>px</Span>
+        </FlexItem>
+        <FlexItem>
+          <Label>项目宽度：</Label>
+          <Input
+            type="range"
+            min={100}
+            max={500}
+            onChange={e => setState({ height: e.target.value })}
+          />
+          <Number>{state.height}</Number>
+          <Span>px</Span>
+        </FlexItem>
+      </Flex>
     </Right>
   )
 })()
 
 const Left = (function() {
   const Left = styled.div`
-    display: grid;
-    grid-template-columns: repeat(5, 100px);
-    grid-template-rows: repeat(10, 1fr);
+    margin-right: 20px;
+    flex: 1;
   `
   const ItemInput = styled.div`
-    grid-column: 1 / 6;
+    display: flex;
+    flex-wrap: wrap;
   `
 
-  const Input = styled.input``
+  const Input = styled.input`
+    flex: auto;
+    width: 200px;
+  `
 
-  const Label = styled.label`display: inline-block; width: 200px;`
+  const LabelInput = styled.label`
+    margin-right: 10px;
+    flex: none;
+  `
+  const ItemSelect = styled.div`
+    flex: auto;
+    display: flex;
+    flex-direction: column;
+    margin: 0 5px;
+  `
 
-  const ItemSelect = styled.div` `
+  const LabelSelect = styled.label`
+    flex: none;
+  `
 
-  const Button = styled.button`
-    height: 50px;
-    border: 1px solid DeepSkyBlue;
-    color: ${prop => prop.selected ? 'white': 'DeepSkyBlue'};
-    background-color: ${prop => !prop.selected ? 'white': 'DeepSkyBlue'};
+  const Contain = styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
   `;
   
+ const Button = styled.button`
+    word-wrap:break-word;
+    outline: none;
+    border: 1px solid DeepSkyBlue;
+    color: ${prop => (prop.selected ? "white" : "DeepSkyBlue")};
+    background-color: ${prop => (!prop.selected ? "white" : "DeepSkyBlue")};
+  `
 
-  return (state, setState) => (
+  return ({state, setState}) => (
     <Left>
       <ItemInput>
-        <Label>grid-template-columns：</Label>
+        <LabelInput>grid-template-columns：</LabelInput>
         <Input type="text" />
       </ItemInput>
       <ItemInput>
-        <Label>grid-template-rows：</Label>
+        <LabelInput>grid-template-rows：</LabelInput>
         <Input type="text" />
       </ItemInput>
       <ItemInput>
-        <Label>grid-row-gap：</Label>
+        <LabelInput>grid-row-gap：</LabelInput>
         <Input type="text" />
       </ItemInput>
       <ItemInput>
-        <Label>grid-column-gap：</Label>
+        <LabelInput>grid-column-gap：</LabelInput>
         <Input type="text" />
       </ItemInput>
       <ItemInput>
-        <Label>grid-template-areas：</Label>
+        <LabelInput>grid-template-areas：</LabelInput>
         <Input type="text" />
       </ItemInput>
+      <ItemInput>
+        <LabelInput>grid-auto-columns：</LabelInput>
+        <Input type="text" />
+      </ItemInput>
+      <ItemInput>
+        <LabelInput>grid-auto-rows：</LabelInput>
+        <Input type="text" />
+      </ItemInput>
+      <Contain>
+        <ItemSelect>
+          <LabelSelect onClick={e => setState({'grid-auto-flow': e.target.textContent})}>grid-auto-flow：</LabelSelect>
+          <Button>row</Button>
+          <Button>column</Button>
+          <Button>row dense</Button>
+          <Button>column dense</Button>
+        </ItemSelect>
+        <ItemSelect>
+          <LabelSelect onClick={e => setState({'justify-items': e.target.textContent})}>justify-items：</LabelSelect>
+          <Button>start</Button>
+          <Button>end</Button>
+          <Button>center</Button>
+          <Button>stretch</Button>
+        </ItemSelect>
+        <ItemSelect>
+          <LabelSelect onClick={e => setState({'align-items': e.target.textContent})}>align-items：</LabelSelect>
+          <Button>start</Button>
+          <Button>end</Button>
+          <Button>center</Button>
+          <Button>stretch</Button>
+        </ItemSelect>
+        <ItemSelect>
+          <LabelSelect onClick={e => setState({'justify-content': e.target.textContent})}>justify-content：</LabelSelect>
+          <Button>start</Button>
+          <Button>end</Button>
+          <Button>center</Button>
+          <Button>stretch</Button>
+          <Button>space-around</Button>
+          <Button>space-between</Button>
+          <Button>space-evenly</Button>
+        </ItemSelect>
+        <ItemSelect onClick={e => setState({'align-content': e.target.textContent})}>
+          <LabelSelect>align-content：</LabelSelect>
+          <Button>start</Button>
+          <Button>end</Button>
+          <Button>center</Button>
+          <Button>stretch</Button>
+          <Button>space-around</Button>
+          <Button>space-between</Button>
+          <Button>space-evenly</Button>
+        </ItemSelect>
+      </Contain>
     </Left>
   )
 })()
-
 const App = (function() {
   const Root = styled.div`
     height: 100%;
@@ -139,6 +222,8 @@ const App = (function() {
 
   const Flex = styled.div`
     display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
     background-color: white;
     border: 1px solid gray;
     border-radius: 10px;
