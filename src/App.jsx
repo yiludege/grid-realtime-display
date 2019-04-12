@@ -1,17 +1,68 @@
-import React, { useState, useReducer } from "react"
-import styled from "styled-components"
-
-const Contain = (function() {
-  return () => {}
-})()
+import React, { useReducer } from "react"
+import styled,  { css }  from "styled-components"
 
 const Item = (function() {
-  return () => {}
+  const Contain = styled.div`
+    background-color: white;
+    border-radius: 3px;
+    border: 1px dashed grey;
+
+
+  `;
+  
+  return ({state, setState}) => {
+  
+    const [item, setItem] = useReducer((preItem, nextItem) => ({...preItem, ...nextItem}))
+
+  return <Contain styled={{...Item, width: state.width, height: state.height}}>
+    hello
+  </Contain>}
+})()
+
+  // grid-template-columns: ${({styled}) => styled['grid-template-columns']};
+  // grid-template-rows: ${({styled}) => styled['grid-template-rows']};
+  // grid-row-gap: ${({styled}) => styled['grid-row-gap']};
+  // grid-column-gap: ${({styled}) => styled['grid-column-gap']};
+  // grid-template-areas: ${({styled}) => styled['grid-template-areas']};
+  // grid-auto-columns: ${({styled}) => styled['grid-auto-columns']};
+  // grid-auto-rows: ${({styled}) => styled['grid-auto-rows']};
+  // grid-auto-flow: ${({styled}) => styled['grid-auto-flow']};
+  // justify-items: ${({styled}) => styled['justify-items']};
+  // align-items: ${({styled}) => styled['align-items']};
+  // justify-content: ${({styled}) => styled['justify-content']};
+  // align-content: ${({styled}) => styled['align-content']};
+
+const Contain = (function() {
+  const Div = styled.div.attrs(({styled}) => ({
+    'grid-template-columns':  styled['grid-template-columns'],
+    'grid-template-rows':  styled['grid-template-rows'],
+    'grid-row-gap':  styled['grid-row-gap'],
+    'grid-column-gap':  styled['grid-column-gap'],
+    'grid-template-areas':  styled['grid-template-areas'],
+    'grid-auto-columns':  styled['grid-auto-columns'],
+    'grid-auto-rows':  styled['grid-auto-rows'],
+    'grid-auto-flow':  styled['grid-auto-flow'],
+    'justify-items':  styled['justify-items'],
+    'align-items':  styled['align-items'],
+    'justify-content':  styled['justify-content'],
+    'align-content':  styled['align-content'],
+  }))`
+  display: grid;
+  background-color: #4cc198;
+  border-radius: 6px;
+  padding: 6px;
+  `;
+  
+  return ({state}) => {
+    return (<Div styled={state}>
+     {[...Array(state.count)].map((ele, index) => (<Item key={index}></Item>))}
+    </Div>)
+  }
 })()
 
 const Right = (function() {
   const Right = styled.div`
-    flex: 2;
+    flex: 1.5;
   `
 
   const Flex = styled.div`
@@ -83,6 +134,7 @@ const Right = (function() {
           <Span>px</Span>
         </FlexItem>
       </Flex>
+      <Contain state={state} setState={setState}></Contain>
     </Right>
   )
 })()
@@ -126,40 +178,40 @@ const Left = (function() {
  const Button = styled.button`
     word-wrap:break-word;
     outline: none;
-    border: 1px solid DeepSkyBlue;
-    color: ${prop => (prop.selected ? "white" : "DeepSkyBlue")};
-    background-color: ${prop => (!prop.selected ? "white" : "DeepSkyBlue")};
+    border: 1px solid #4cc198;
+    color: ${prop => (prop.selected ? "white" : "#4cc198")};
+    background-color: ${prop => (!prop.selected ? "white" : "#4cc198")};
   `
 
   return ({state, setState}) => (
     <Left>
       <ItemInput>
         <LabelInput>grid-template-columns：</LabelInput>
-        <Input type="text" />
+        <Input type="text" value={state['grid-template-columns']} onChange={e => setState({"grid-template-columns": e.target.value})}/>
       </ItemInput>
       <ItemInput>
         <LabelInput>grid-template-rows：</LabelInput>
-        <Input type="text" />
+        <Input type="text" value={state['grid-template-columns']} onChange={e => setState({"grid-template-columns": e.target.value})}/>
       </ItemInput>
       <ItemInput>
         <LabelInput>grid-row-gap：</LabelInput>
-        <Input type="text" />
+        <Input type="text" value={state['grid-row-gap']} onChange={e => setState({"grid-row-gap": e.target.value})}/>
       </ItemInput>
       <ItemInput>
         <LabelInput>grid-column-gap：</LabelInput>
-        <Input type="text" />
+        <Input type="text" value={state['grid-column-gap']} onChange={e => setState({"grid-column-gap": e.target.value})}/>
       </ItemInput>
       <ItemInput>
         <LabelInput>grid-template-areas：</LabelInput>
-        <Input type="text" />
+        <Input type="text" value={state['grid-template-areas']} onChange={e => setState({"grid-template-areas": e.target.value})}/>
       </ItemInput>
       <ItemInput>
         <LabelInput>grid-auto-columns：</LabelInput>
-        <Input type="text" />
+        <Input type="text" value={state['grid-auto-columns']} onChange={e => setState({"grid-auto-columns": e.target.value})}/>
       </ItemInput>
       <ItemInput>
         <LabelInput>grid-auto-rows：</LabelInput>
-        <Input type="text" />
+        <Input type="text" value={state['grid-auto-rows']} onChange={e => setState({"grid-auto-rows": e.target.value})}/>
       </ItemInput>
       <Contain>
         <ItemSelect>
@@ -235,7 +287,14 @@ const App = (function() {
     const [state, setState] = useReducer((preState, newState) => ({ ...preState, ...newState }), {
       count: 4,
       width: 100,
-      height: 200
+      height: 200,
+      "grid-template-columns": "1fr 1fr 1fr 1fr",
+      "grid-template-rows": "1fr 1fr 1fr 1fr",
+      "grid-row-gap":'20px',
+      "grid-column-gap":'20px',
+      "grid-template-areas": '',
+      "grid-auto-columns":'', 
+      "grid-auto-rows":''
     })
 
     return (
