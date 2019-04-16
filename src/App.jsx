@@ -1,73 +1,160 @@
-import React, { useReducer } from "react"
-import styled,  { css }  from "styled-components"
+import React, { createContext, useReducer, useContext, useState } from "react"
+import styled, { css } from "styled-components"
+
+const StateContext = createContext({ state: {}, setState: () => {} })
 
 const Item = (function() {
   const Contain = styled.div`
+    font-size: 10px;
     background-color: white;
-    border-radius: 3px;
-    border: 1px dashed grey;
+    border-radius: 6px;
+    padding: 3px;
+    border: 1px solid grey;
+    ${({ styled }) => css`
+      grid-column-start: ${styled.gridColumnStart};
+      grid-column-end: ${styled.gridColumnEnd};
+      grid-row-start: ${styled.gridRowStart};
+      grid-row-end: ${styled.gridRowEnd};
+      width: ${styled.width.length > 1 ? styled.width : ''}px;
+      height: ${styled.height}px;
+    `}
+  `
 
+  const Input = styled.input`
+    box-sizing: border-box;
+    width: 100%;
+  `
 
-  `;
-  
-  return ({state, setState}) => {
-  
-    const [item, setItem] = useReducer((preItem, nextItem) => ({...preItem, ...nextItem}))
+  const Number = styled.div`
+    margin: 5px auto;
+    font-size: 15px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    text-align: center;
+    color: white;
+    background-color: #4cc198;
+  `
+  const SelectContain = styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    padding: 3px;
+  `
 
-  return <Contain styled={{...Item, width: state.width, height: state.height}}>
-    hello
-  </Contain>}
+  const Label = styled.label`
+    flex: auto;
+  `
+
+  const Select = styled.select`
+    flex: auto;
+  `
+
+  const Option = styled.option``
+
+  return ({ index }) => {
+    const [item, setItem] = useReducer((preItem, nextItem) =>({ ...preItem, ...nextItem }), {
+      gridColumnStart: "",
+      gridColumnEnd: "",
+      gridRowStart: "",
+      gridRowEnd: "",
+      width: "",
+      height: "",
+      justifySelf: "stretch",
+      alignSelf: "stretch"
+    })
+
+    const inputList = {
+      gridColumnStart: "grid-column-start",
+      gridColumnEnd: "grid-column-end",
+      gridRowStart: "grid-row-start",
+      gridRowEnd: "grid-row-end",
+      width: "width(px)",
+      height: "height(px)"
+    }
+
+    const isSize = (type) => (['width', 'height'].includes(type))
+
+    const InputItem = ({ label, type }) => (
+      <Input
+        type="number"
+        key="input"
+        placeholder={label}
+        value={item[type]}
+        onChange={e => setItem({ [type]: e.target.value })}
+      />
+    )
+
+    const SelectItem = ({ label, type }) => (
+      <SelectContain>
+        <Label>{label}</Label>
+        <Select value={item[type]} onChange={e => setItem({ [type]: e.target.value })}>
+          <Option value="stretch">stretch</Option>
+          <Option value="start">start</Option>
+          <Option value="end">end</Option>
+          <Option value="center">center</Option>
+        </Select>
+      </SelectContain>
+    )
+
+    return (
+      <Contain styled={item}>
+        <Number>{index}</Number>
+        {Object.entries(inputList).map(([type, label]) => (
+          <InputItem label={label} type={type} key={type} />
+        ))}
+        <SelectItem label="justify-self" type="justifySelf" />
+        <SelectItem label="align-self" type="alignSelf" />
+      </Contain>
+    )
+  }
 })()
 
-  // grid-template-columns: ${({styled}) => styled['grid-template-columns']};
-  // grid-template-rows: ${({styled}) => styled['grid-template-rows']};
-  // grid-row-gap: ${({styled}) => styled['grid-row-gap']};
-  // grid-column-gap: ${({styled}) => styled['grid-column-gap']};
-  // grid-template-areas: ${({styled}) => styled['grid-template-areas']};
-  // grid-auto-columns: ${({styled}) => styled['grid-auto-columns']};
-  // grid-auto-rows: ${({styled}) => styled['grid-auto-rows']};
-  // grid-auto-flow: ${({styled}) => styled['grid-auto-flow']};
-  // justify-items: ${({styled}) => styled['justify-items']};
-  // align-items: ${({styled}) => styled['align-items']};
-  // justify-content: ${({styled}) => styled['justify-content']};
-  // align-content: ${({styled}) => styled['align-content']};
-
 const Contain = (function() {
-  const Div = styled.div.attrs(({styled}) => ({
-    'grid-template-columns':  styled['grid-template-columns'],
-    'grid-template-rows':  styled['grid-template-rows'],
-    'grid-row-gap':  styled['grid-row-gap'],
-    'grid-column-gap':  styled['grid-column-gap'],
-    'grid-template-areas':  styled['grid-template-areas'],
-    'grid-auto-columns':  styled['grid-auto-columns'],
-    'grid-auto-rows':  styled['grid-auto-rows'],
-    'grid-auto-flow':  styled['grid-auto-flow'],
-    'justify-items':  styled['justify-items'],
-    'align-items':  styled['align-items'],
-    'justify-content':  styled['justify-content'],
-    'align-content':  styled['align-content'],
-  }))`
-  display: grid;
-  background-color: #4cc198;
-  border-radius: 6px;
-  padding: 6px;
-  `;
-  
-  return ({state}) => {
-    return (<Div styled={state}>
-     {[...Array(state.count)].map((ele, index) => (<Item key={index}></Item>))}
-    </Div>)
+  const Div = styled.div`
+    display: grid;
+    background-color: #4cc198;
+    border-radius: 6px;
+    padding: 6px;
+    ${({ styled }) => css`
+      grid-template-columns: ${styled.gridTemplateColumns
+        .map(ele => ele.number + ele.type)
+        .join(" ")};
+      grid-template-rows: ${styled.gridTemplateRows.map(ele => ele.number + ele.type).join(" ")};
+      grid-row-gap: ${styled.gridRowGap.map(ele => ele.number + ele.type).join(" ")};
+      grid-column-gap: ${styled.gridColumnGap.map(ele => ele.number + ele.type).join(" ")};
+      grid-auto-columns: ${styled.gridAutoColumns.map(ele => ele.number + ele.type).join(" ")};
+      grid-auto-rows: ${styled.gridAutoRows.map(ele => ele.number + ele.type).join()};
+      grid-template-areas: ${styled.gridTemplateAreas};
+      grid-auto-flow: ${styled.gridAutoFlow};
+      justify-items: ${styled.justifyItems};
+      align-items: ${styled.alignItems};
+      justify-content: ${styled.justifyContent};
+      align-content: ${styled.alignContent};
+    `}
+  `
+
+  return () => {
+    const { state } = useContext(StateContext)
+    return (
+      <Div styled={state}>
+        {[...Array(state.count)].map((ele, index) => (
+          <Item key={index} index={index} />
+        ))}
+      </Div>
+    )
   }
 })()
 
 const Right = (function() {
   const Right = styled.div`
-    flex: 1.5;
+    flex: 1;
   `
 
   const Flex = styled.div`
     display: flex;
-    height: 50px;
+    margin: 20px 0;
     flex-wrap: wrap;
   `
 
@@ -77,7 +164,7 @@ const Right = (function() {
   `
 
   const Button = styled.button`
-    display: inline-block;
+    /* display: inline-block; */
     flex: none;
     margin: 0 5px;
   `
@@ -102,41 +189,25 @@ const Right = (function() {
     flex: none;
   `
 
-  return ({ state, setState }) => (
-    <Right>
-      <Flex>
-        <FlexItem>
-          <Label>项目数量：</Label>
-          <Number>{state.count}</Number>
-          <Button onClick={e => setState({ count: state.count + 1 })}>+</Button>
-          <Button onClick={e => setState({ count: state.count ? state.count - 1 : 0 })}>-</Button>
-        </FlexItem>
-        <FlexItem>
-          <Label>项目长度：</Label>
-          <Input
-            type="range"
-            min={100}
-            max={500}
-            onChange={e => setState({ width: e.target.value })}
-          />
-          <Number>{state.width}</Number>
-          <Span>px</Span>
-        </FlexItem>
-        <FlexItem>
-          <Label>项目宽度：</Label>
-          <Input
-            type="range"
-            min={100}
-            max={500}
-            onChange={e => setState({ height: e.target.value })}
-          />
-          <Number>{state.height}</Number>
-          <Span>px</Span>
-        </FlexItem>
-      </Flex>
-      <Contain state={state} setState={setState}></Contain>
-    </Right>
-  )
+  return () => {
+    const { state, setState, setInitState } = useContext(StateContext)
+
+    return (
+      <Right>
+        <Flex>
+          <FlexItem>
+            <Label>项目数量：</Label>
+            <Number>{state.count}</Number>
+            <Button onClick={e => setState({ count: state.count + 1 })}>+</Button>
+            <Button onClick={e => setState({ count: state.count ? state.count - 1 : 0 })}>-</Button>
+          </FlexItem>
+          <Button onClick={setInitState}>容器重置</Button>
+          <Button onClick={setInitState}>项目重置</Button>
+        </Flex>
+        <Contain state={state} setState={setState} />
+      </Right>
+    )
+  }
 })()
 
 const Left = (function() {
@@ -146,16 +217,23 @@ const Left = (function() {
   `
   const ItemInput = styled.div`
     display: flex;
+    flex-direction: column;
     flex-wrap: wrap;
+    flex: none;
+    margin: 0 5px;
   `
 
   const Input = styled.input`
-    flex: auto;
-    width: 200px;
+    flex: none;
+    width: 60px;
+  `
+  const ButtonInput = styled.button`
+    display: inline-block;
+    flex: none;
+    margin: 0 5px;
   `
 
   const LabelInput = styled.label`
-    margin-right: 10px;
     flex: none;
   `
   const ItemSelect = styled.div`
@@ -169,95 +247,143 @@ const Left = (function() {
     flex: none;
   `
 
+  const Select = styled.select``
+  const Option = styled.option``
+
   const Contain = styled.div`
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
-  `;
-  
- const Button = styled.button`
-    word-wrap:break-word;
+    justify-content: start;
+  `
+
+  const Button = styled.button`
+    word-wrap: break-word;
     outline: none;
     border: 1px solid #4cc198;
     color: ${prop => (prop.selected ? "white" : "#4cc198")};
     background-color: ${prop => (!prop.selected ? "white" : "#4cc198")};
   `
+  const DivContain = styled.div`
+    display: flex;
+    align-items: center;
+    margin-left: 8px;
+  `
 
-  return ({state, setState}) => (
-    <Left>
+  const DivItem = styled.div`
+    display: flex;
+    flex-direction: column;
+    padding: 3px;
+    border: 1px solid #4cc198;
+    border-radius: 6px;
+    width: 160px;
+    flex: none;
+  `
+
+  const ButtonNumber = styled.button`
+    margin: 0 3px;
+  `
+
+  return () => {
+    const { state, setState } = useContext(StateContext)
+
+    const inputList = {
+      gridTemplateColumns: "rid-template-columns",
+      gridTemplateRows: "grid-template-rows",
+      gridRowGap: "grid-row-gap",
+      gridColumnGap: "grid-column-gap",
+      gridAutoColumns: "grid-auto-columns",
+      gridAutoRows: "grid-auto-rows"
+    }
+
+    const InputItem = ({ label, type }) => (
       <ItemInput>
-        <LabelInput>grid-template-columns：</LabelInput>
-        <Input type="text" value={state['grid-template-columns']} onChange={e => setState({"grid-template-columns": e.target.value})}/>
+        <LabelInput>{label}：</LabelInput>
+        <DivItem>
+          {state[type].map((ele, index, arr) => (
+            <DivContain key={index}>
+              <Input
+                type="range"
+                value={ele.number}
+                min={ele.type === "fr" ? ele.minFr : ele.minPx}
+                max={ele.type === "fr" ? ele.maxFr : ele.maxPx}
+                onChange={e =>
+                  setState({
+                    [type]: arr.map((ele, indexMap) =>
+                      index === indexMap ? { ...ele, number: e.target.value } : ele
+                    )
+                  })
+                }
+              />
+              <ButtonNumber>{ele.number}</ButtonNumber>
+              <Select
+                value={ele.type}
+                onChange={e =>
+                  setState({
+                    [type]: arr.map((ele, indexMap) =>
+                      index === indexMap ? { ...ele, type: e.target.value } : ele
+                    ),
+                    number: ele.type === "fr" ? ele.defaultFr : ele.defaultPx
+                  })
+                }
+              >
+                <Option value="fr">fr</Option>
+                <Option value="px">px</Option>
+              </Select>
+            </DivContain>
+          ))}
+          {
+            <Contain>
+              <ButtonInput>+</ButtonInput>
+              <ButtonInput>-</ButtonInput>
+            </Contain>
+          }
+        </DivItem>
       </ItemInput>
-      <ItemInput>
-        <LabelInput>grid-template-rows：</LabelInput>
-        <Input type="text" value={state['grid-template-columns']} onChange={e => setState({"grid-template-columns": e.target.value})}/>
-      </ItemInput>
-      <ItemInput>
-        <LabelInput>grid-row-gap：</LabelInput>
-        <Input type="text" value={state['grid-row-gap']} onChange={e => setState({"grid-row-gap": e.target.value})}/>
-      </ItemInput>
-      <ItemInput>
-        <LabelInput>grid-column-gap：</LabelInput>
-        <Input type="text" value={state['grid-column-gap']} onChange={e => setState({"grid-column-gap": e.target.value})}/>
-      </ItemInput>
-      <ItemInput>
-        <LabelInput>grid-template-areas：</LabelInput>
-        <Input type="text" value={state['grid-template-areas']} onChange={e => setState({"grid-template-areas": e.target.value})}/>
-      </ItemInput>
-      <ItemInput>
-        <LabelInput>grid-auto-columns：</LabelInput>
-        <Input type="text" value={state['grid-auto-columns']} onChange={e => setState({"grid-auto-columns": e.target.value})}/>
-      </ItemInput>
-      <ItemInput>
-        <LabelInput>grid-auto-rows：</LabelInput>
-        <Input type="text" value={state['grid-auto-rows']} onChange={e => setState({"grid-auto-rows": e.target.value})}/>
-      </ItemInput>
-      <Contain>
-        <ItemSelect>
-          <LabelSelect onClick={e => setState({'grid-auto-flow': e.target.textContent})}>grid-auto-flow：</LabelSelect>
-          <Button>row</Button>
-          <Button>column</Button>
-          <Button>row dense</Button>
-          <Button>column dense</Button>
-        </ItemSelect>
-        <ItemSelect>
-          <LabelSelect onClick={e => setState({'justify-items': e.target.textContent})}>justify-items：</LabelSelect>
-          <Button>start</Button>
-          <Button>end</Button>
-          <Button>center</Button>
-          <Button>stretch</Button>
-        </ItemSelect>
-        <ItemSelect>
-          <LabelSelect onClick={e => setState({'align-items': e.target.textContent})}>align-items：</LabelSelect>
-          <Button>start</Button>
-          <Button>end</Button>
-          <Button>center</Button>
-          <Button>stretch</Button>
-        </ItemSelect>
-        <ItemSelect>
-          <LabelSelect onClick={e => setState({'justify-content': e.target.textContent})}>justify-content：</LabelSelect>
-          <Button>start</Button>
-          <Button>end</Button>
-          <Button>center</Button>
-          <Button>stretch</Button>
-          <Button>space-around</Button>
-          <Button>space-between</Button>
-          <Button>space-evenly</Button>
-        </ItemSelect>
-        <ItemSelect onClick={e => setState({'align-content': e.target.textContent})}>
-          <LabelSelect>align-content：</LabelSelect>
-          <Button>start</Button>
-          <Button>end</Button>
-          <Button>center</Button>
-          <Button>stretch</Button>
-          <Button>space-around</Button>
-          <Button>space-between</Button>
-          <Button>space-evenly</Button>
-        </ItemSelect>
-      </Contain>
-    </Left>
-  )
+    )
+
+    const defaultOptions = ["start", "end", "center", "stretch"]
+    const moreOptions = ["space-around", "space-between", "space-evenly"]
+    const flowOptions = ["row", "column", "row dense", "column dense"]
+    const selectList = [
+      { label: "justify-items", type: "justifyItems", options: defaultOptions },
+      { label: "align-items", type: "alignItems", options: defaultOptions },
+      {
+        label: "justify-content",
+        type: "justifyContent",
+        options: [...defaultOptions, ...moreOptions]
+      },
+      {
+        label: "align-content",
+        type: "alignContent",
+        options: [...defaultOptions, ...moreOptions]
+      },
+      { label: "grid-auto-flow", type: "gridAutoFlow", options: flowOptions }
+    ]
+
+    const SelectItem = ({ label, type, options }) => (
+      <ItemSelect onClick={e => setState({ [type]: e.target.textContent })}>
+        <LabelSelect>{label}：</LabelSelect>
+        {options.map((ele, index) => (
+          <Button key={ele}>{ele}</Button>
+        ))}
+      </ItemSelect>
+    )
+
+    return (
+      <Left>
+        <Contain>
+          {Object.entries(inputList).map(([type, label]) => (
+            <InputItem label={label} type={type} key={type} />
+          ))}
+        </Contain>
+        <Contain>
+          {selectList.map(({ label, type, options }) => (
+            <SelectItem label={label} type={type} options={options} key={type} />
+          ))}
+        </Contain>
+      </Left>
+    )
+  }
 })()
 const App = (function() {
   const Root = styled.div`
@@ -283,27 +409,121 @@ const App = (function() {
     padding: 20px 20px;
   `
 
-  return () => {
-    const [state, setState] = useReducer((preState, newState) => ({ ...preState, ...newState }), {
-      count: 4,
-      width: 100,
-      height: 200,
-      "grid-template-columns": "1fr 1fr 1fr 1fr",
-      "grid-template-rows": "1fr 1fr 1fr 1fr",
-      "grid-row-gap":'20px',
-      "grid-column-gap":'20px',
-      "grid-template-areas": '',
-      "grid-auto-columns":'', 
-      "grid-auto-rows":''
-    })
+  const [count, minWidth, maxWidth, minHeight, maxHeight] = [16, 110, 300, 200, 500]
+  const initState = {
+    count,
+    minWidth,
+    maxWidth,
+    minHeight,
+    maxHeight,
+    gridTemplateColumns: [
+      {
+        number: 1,
+        type: "fr",
+        defaultFr: 1,
+        defaultPx: 110,
+        minFr: 1,
+        maxFr: 10,
+        minPx: minWidth,
+        maxPx: maxWidth
+      },
+      {
+        number: 1,
+        type: "fr",
+        defaultFr: 1,
+        defaultPx: 110,
+        minFr: 1,
+        maxFr: 10,
+        minPx: minWidth,
+        maxPx: maxWidth
+      },
+      {
+        number: 1,
+        type: "fr",
+        defaultFr: 1,
+        defaultPx: 110,
+        minFr: 1,
+        maxFr: 10,
+        minPx: minWidth,
+        maxPx: maxWidth
+      },
+      {
+        number: 1,
+        type: "fr",
+        defaultFr: 1,
+        defaultPx: 110,
+        minFr: 1,
+        maxFr: 10,
+        minPx: minWidth,
+        maxPx: maxWidth
+      }
+    ],
+    gridTemplateRows: [
+      {
+        number: 1,
+        type: "fr",
+        defaultFr: 1,
+        defaultPx: 200,
+        minFr: 1,
+        maxFr: 10,
+        minPx: minHeight,
+        maxPx: maxHeight
+      },
+      {
+        number: 1,
+        type: "fr",
+        defaultFr: 1,
+        defaultPx: 200,
+        minFr: 1,
+        maxFr: 10,
+        minPx: minHeight,
+        maxPx: maxHeight
+      },
+      {
+        number: 1,
+        type: "fr",
+        defaultFr: 1,
+        defaultPx: 200,
+        minFr: 1,
+        maxFr: 10,
+        minPx: minHeight,
+        maxPx: maxHeight
+      },
+      {
+        number: 1,
+        type: "fr",
+        defaultFr: 1,
+        defaultPx: 200,
+        minFr: 1,
+        maxFr: 10,
+        minPx: minHeight,
+        maxPx: maxHeight
+      }
+    ],
+    gridRowGap: [{ number: 10, type: "px", minPx: 10, maxPx: 50 }],
+    gridColumnGap: [{ number: 10, type: "px", minPx: 10, maxPx: 50 }],
+    gridAutoColumns: [{ number: 20, type: "px", minPx: minWidth, maxPx: maxWidth }],
+    gridAutoRows: [{ number: 20, type: "px", minPx: minHeight, maxPx: maxHeight }],
+    gridTemplateAreas: "",
+    justifyItems: "",
+    alignItems: "",
+    justifyContent: "",
+    alignContent: "",
+    gridAutoFlow: ""
+  }
 
+  return () => {
+    const [state, setState] = useReducer((preState, newState) => ({ ...preState, ...newState }), initState)
+    const setInitState = () => setState(initState)
     return (
       <Root>
         <Header>Grid实时演示</Header>
-        <Flex>
-          <Left setState={setState} state={state} />
-          <Right setState={setState} state={state} />
-        </Flex>
+        <StateContext.Provider value={{ state, setState, setInitState }}>
+          <Flex>
+            <Left />
+            <Right />
+          </Flex>
+        </StateContext.Provider>
       </Root>
     )
   }
