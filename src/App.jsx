@@ -1,7 +1,9 @@
-import React, { createContext, useReducer, useContext, useState } from "react"
+import React, { createContext, useReducer, useContext, useEffect } from "react"
 import styled, { css } from "styled-components"
 
 const StateContext = createContext({ state: {}, setState: () => {} })
+const ItemContext = createContext({ item: {}, setItem: () => {} })
+const [count, minWidth, maxWidth, minHeight, maxHeight] = [9, 110, 300, 200, 500]
 
 const Item = (function() {
   const Contain = styled.div`
@@ -15,7 +17,9 @@ const Item = (function() {
       grid-column-end: ${styled.gridColumnEnd};
       grid-row-start: ${styled.gridRowStart};
       grid-row-end: ${styled.gridRowEnd};
-      width: ${styled.width.length > 1 ? styled.width : ''}px;
+      justify-self: ${styled.justifySelf}
+      align-self: ${styled.alignSelf}
+      width: ${styled.width.length > 1 ? styled.width : ""}px;
       height: ${styled.height}px;
     `}
   `
@@ -53,30 +57,9 @@ const Item = (function() {
 
   const Option = styled.option``
 
-  return ({ index }) => {
-    const [item, setItem] = useReducer((preItem, nextItem) =>({ ...preItem, ...nextItem }), {
-      gridColumnStart: "",
-      gridColumnEnd: "",
-      gridRowStart: "",
-      gridRowEnd: "",
-      width: "",
-      height: "",
-      justifySelf: "stretch",
-      alignSelf: "stretch"
-    })
-
-    const inputList = {
-      gridColumnStart: "grid-column-start",
-      gridColumnEnd: "grid-column-end",
-      gridRowStart: "grid-row-start",
-      gridRowEnd: "grid-row-end",
-      width: "width(px)",
-      height: "height(px)"
-    }
-
-    const isSize = (type) => (['width', 'height'].includes(type))
-
-    const InputItem = ({ label, type }) => (
+  const InputItem = ({ label, type }) => {
+    const { item, setItem } = useContext(ItemContext)
+    return (
       <Input
         type="number"
         key="input"
@@ -85,8 +68,11 @@ const Item = (function() {
         onChange={e => setItem({ [type]: e.target.value })}
       />
     )
+  }
 
-    const SelectItem = ({ label, type }) => (
+  const SelectItem = ({ label, type }) => {
+    const { item, setItem } = useContext(ItemContext)
+    return (
       <SelectContain>
         <Label>{label}</Label>
         <Select value={item[type]} onChange={e => setItem({ [type]: e.target.value })}>
@@ -97,16 +83,48 @@ const Item = (function() {
         </Select>
       </SelectContain>
     )
+  }
+
+  const inputList = {
+    gridColumnStart: "grid-column-start",
+    gridColumnEnd: "grid-column-end",
+    gridRowStart: "grid-row-start",
+    gridRowEnd: "grid-row-end",
+    width: "width(px)",
+    height: "height(px)"
+  }
+
+  const initItem = {
+    gridColumnStart: "",
+    gridColumnEnd: "",
+    gridRowStart: "",
+    gridRowEnd: "",
+    width: "",
+    height: "",
+    justifySelf: "stretch",
+    alignSelf: "stretch"
+  }
+
+  return ({ index }) => {
+    const [item, setItem] = useReducer((preItem, nextItem) => ({ ...preItem, ...nextItem }), initItem)
+
+    const { state } = useContext(StateContext)
+
+    useEffect(() => {
+      setItem(initItem)
+    }, [state.resetFlag])
 
     return (
-      <Contain styled={item}>
-        <Number>{index}</Number>
-        {Object.entries(inputList).map(([type, label]) => (
-          <InputItem label={label} type={type} key={type} />
-        ))}
-        <SelectItem label="justify-self" type="justifySelf" />
-        <SelectItem label="align-self" type="alignSelf" />
-      </Contain>
+      <ItemContext.Provider value={{ item, setItem }}>
+        <Contain styled={item}>
+          <Number>{index}</Number>
+          {Object.entries(inputList).map(([type, label]) => (
+            <InputItem label={label} type={type} key={type} />
+          ))}
+          <SelectItem label="justify-self" type="justifySelf" />
+          <SelectItem label="align-self" type="alignSelf" />
+        </Contain>
+      </ItemContext.Provider>
     )
   }
 })()
@@ -202,7 +220,9 @@ const Right = (function() {
             <Button onClick={e => setState({ count: state.count ? state.count - 1 : 0 })}>-</Button>
           </FlexItem>
           <Button onClick={setInitState}>容器重置</Button>
-          <Button onClick={setInitState}>项目重置</Button>
+          <Button onClick={() => setState({ ...state, resetFlag: !state.resetFlag })}>
+            项目重置
+          </Button>
         </Flex>
         <Contain state={state} setState={setState} />
       </Right>
@@ -235,6 +255,9 @@ const Left = (function() {
 
   const LabelInput = styled.label`
     flex: none;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 60px;
   `
   const ItemSelect = styled.div`
     flex: auto;
@@ -243,8 +266,11 @@ const Left = (function() {
     margin: 0 5px;
   `
 
-  const LabelSelect = styled.label`
+  const Label = styled.label`
     flex: none;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 60px;
   `
 
   const Select = styled.select``
@@ -254,14 +280,22 @@ const Left = (function() {
     display: flex;
     flex-wrap: wrap;
     justify-content: start;
+    padding-bottom: 30px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #4cc198;
   `
 
   const Button = styled.button`
+    font-size: 15px;
     word-wrap: break-word;
     outline: none;
     border: 1px solid #4cc198;
     color: ${prop => (prop.selected ? "white" : "#4cc198")};
     background-color: ${prop => (!prop.selected ? "white" : "#4cc198")};
+    border-radius: 3px;
+    line-height:25px;
+    cursor: pointer;
+    margin: 5px 0;
   `
   const DivContain = styled.div`
     display: flex;
@@ -282,22 +316,45 @@ const Left = (function() {
   const ButtonNumber = styled.button`
     margin: 0 3px;
   `
+  const inputList = {
+    gridTemplateColumns: "rid-template-columns",
+    gridTemplateRows: "grid-template-rows",
+    gridRowGap: "grid-row-gap",
+    gridColumnGap: "grid-column-gap",
+    gridAutoColumns: "grid-auto-columns",
+    gridAutoRows: "grid-auto-rows"
+  }
 
-  return () => {
-    const { state, setState } = useContext(StateContext)
-
-    const inputList = {
-      gridTemplateColumns: "rid-template-columns",
-      gridTemplateRows: "grid-template-rows",
-      gridRowGap: "grid-row-gap",
-      gridColumnGap: "grid-column-gap",
-      gridAutoColumns: "grid-auto-columns",
-      gridAutoRows: "grid-auto-rows"
+  const initState = {
+    gridTemplateColumns: {
+      number: 1,
+      type: "fr",
+      defaultFr: 1,
+      defaultPx: 110,
+      minFr: 1,
+      maxFr: 10,
+      minPx: minWidth,
+      maxPx: maxWidth
+    },
+    gridTemplateRows: {
+      number: 1,
+      type: "fr",
+      defaultFr: 1,
+      defaultPx: 200,
+      minFr: 1,
+      maxFr: 10,
+      minPx: minHeight,
+      maxPx: maxHeight
     }
+  }
 
-    const InputItem = ({ label, type }) => (
+  const gapList = ["gridRowGap", "gridColumnGap"]
+
+  const InputItem = ({ label, type }) => {
+    const { state, setState } = useContext(StateContext)
+    return (
       <ItemInput>
-        <LabelInput>{label}：</LabelInput>
+        <Label>{label}：</Label>
         <DivItem>
           {state[type].map((ele, index, arr) => (
             <DivContain key={index}>
@@ -320,55 +377,71 @@ const Left = (function() {
                 onChange={e =>
                   setState({
                     [type]: arr.map((ele, indexMap) =>
-                      index === indexMap ? { ...ele, type: e.target.value } : ele
-                    ),
-                    number: ele.type === "fr" ? ele.defaultFr : ele.defaultPx
+                      index === indexMap
+                        ? {
+                            ...ele,
+                            type: e.target.value,
+                            number: e.target.value === "fr" ? ele.defaultFr : ele.defaultPx
+                          }
+                        : ele
+                    )
                   })
                 }
               >
-                <Option value="fr">fr</Option>
+                {!gapList.includes(type) && <Option value="fr">fr</Option>}
                 <Option value="px">px</Option>
               </Select>
             </DivContain>
           ))}
-          {
-            <Contain>
-              <ButtonInput>+</ButtonInput>
-              <ButtonInput>-</ButtonInput>
-            </Contain>
-          }
+          {initState[type] && (
+            <DivContain>
+              <ButtonInput onClick={() => setState({ [type]: [...state[type], initState[type]] })}>
+                +
+              </ButtonInput>
+              <ButtonInput
+                onClick={() => state[type].length && setState({ [type]: state[type].slice(0, -1) })}
+              >
+                -
+              </ButtonInput>
+            </DivContain>
+          )}
         </DivItem>
       </ItemInput>
     )
+  }
 
-    const defaultOptions = ["start", "end", "center", "stretch"]
-    const moreOptions = ["space-around", "space-between", "space-evenly"]
-    const flowOptions = ["row", "column", "row dense", "column dense"]
-    const selectList = [
-      { label: "justify-items", type: "justifyItems", options: defaultOptions },
-      { label: "align-items", type: "alignItems", options: defaultOptions },
-      {
-        label: "justify-content",
-        type: "justifyContent",
-        options: [...defaultOptions, ...moreOptions]
-      },
-      {
-        label: "align-content",
-        type: "alignContent",
-        options: [...defaultOptions, ...moreOptions]
-      },
-      { label: "grid-auto-flow", type: "gridAutoFlow", options: flowOptions }
-    ]
+  const defaultOptions = ["start", "end", "center", "stretch"]
+  const moreOptions = ["space-around", "space-between", "space-evenly"]
+  const flowOptions = ["row", "column", "row dense", "column dense"]
+  const selectList = [
+    { label: "justify-items", type: "justifyItems", options: defaultOptions },
+    { label: "align-items", type: "alignItems", options: defaultOptions },
+    {
+      label: "justify-content",
+      type: "justifyContent",
+      options: [...defaultOptions, ...moreOptions]
+    },
+    {
+      label: "align-content",
+      type: "alignContent",
+      options: [...defaultOptions, ...moreOptions]
+    },
+    { label: "grid-auto-flow", type: "gridAutoFlow", options: flowOptions }
+  ]
 
-    const SelectItem = ({ label, type, options }) => (
-      <ItemSelect onClick={e => setState({ [type]: e.target.textContent })}>
-        <LabelSelect>{label}：</LabelSelect>
+  const SelectItem = ({ label, type, options }) => {
+    const { state, setState } = useContext(StateContext)
+    return (
+      <ItemSelect onMouseDown={e => e.target.tagName === 'BUTTON' && setState({ [type]: e.target.textContent })}>
+        <Label>{label}：</Label>
         {options.map((ele, index) => (
-          <Button key={ele}>{ele}</Button>
+          <Button key={ele} selected={ele === state[type]}>{ele}</Button>
         ))}
       </ItemSelect>
     )
+  }
 
+  return () => {
     return (
       <Left>
         <Contain>
@@ -409,7 +482,6 @@ const App = (function() {
     padding: 20px 20px;
   `
 
-  const [count, minWidth, maxWidth, minHeight, maxHeight] = [16, 110, 300, 200, 500]
   const initState = {
     count,
     minWidth,
@@ -417,16 +489,6 @@ const App = (function() {
     minHeight,
     maxHeight,
     gridTemplateColumns: [
-      {
-        number: 1,
-        type: "fr",
-        defaultFr: 1,
-        defaultPx: 110,
-        minFr: 1,
-        maxFr: 10,
-        minPx: minWidth,
-        maxPx: maxWidth
-      },
       {
         number: 1,
         type: "fr",
@@ -488,32 +550,30 @@ const App = (function() {
         maxFr: 10,
         minPx: minHeight,
         maxPx: maxHeight
-      },
-      {
-        number: 1,
-        type: "fr",
-        defaultFr: 1,
-        defaultPx: 200,
-        minFr: 1,
-        maxFr: 10,
-        minPx: minHeight,
-        maxPx: maxHeight
       }
     ],
     gridRowGap: [{ number: 10, type: "px", minPx: 10, maxPx: 50 }],
     gridColumnGap: [{ number: 10, type: "px", minPx: 10, maxPx: 50 }],
-    gridAutoColumns: [{ number: 20, type: "px", minPx: minWidth, maxPx: maxWidth }],
-    gridAutoRows: [{ number: 20, type: "px", minPx: minHeight, maxPx: maxHeight }],
+    gridAutoColumns: [
+      { number: 20, type: "px", minPx: minWidth, maxPx: maxWidth, defaultFr: 1, defaultPx: 110 }
+    ],
+    gridAutoRows: [
+      { number: 20, type: "px", minPx: minHeight, maxPx: maxHeight, defaultFr: 1, defaultPx: 110 }
+    ],
     gridTemplateAreas: "",
-    justifyItems: "",
-    alignItems: "",
-    justifyContent: "",
-    alignContent: "",
-    gridAutoFlow: ""
+    justifyItems: "stretch",
+    alignItems: "stretch",
+    justifyContent: "stretch",
+    alignContent: "stretch",
+    gridAutoFlow: "row",
+    resetFlag: false
   }
 
   return () => {
-    const [state, setState] = useReducer((preState, newState) => ({ ...preState, ...newState }), initState)
+    const [state, setState] = useReducer(
+      (preState, newState) => ({ ...preState, ...newState }),
+      initState
+    )
     const setInitState = () => setState(initState)
     return (
       <Root>
