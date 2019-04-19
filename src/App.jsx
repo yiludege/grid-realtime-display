@@ -3,7 +3,41 @@ import styled, { css } from "styled-components"
 
 const StateContext = createContext({ state: {}, setState: () => {} })
 const ItemContext = createContext({ item: {}, setItem: () => {} })
-const [count, minWidth, maxWidth, minHeight, maxHeight] = [9, 110, 300, 200, 500]
+const [count, minRangeWidth, maxRangeWidth, minRangeHeight, maxRangeHeight] = [9, 150, 350, 150, 350]
+const [minContainWidth, maxContainWidth, minContainHeight, maxContainHeight, containWidth, containHeight] = [700, 1300, 700, 1300, 1000, 1000]
+const gridTemplateColumns = 
+{
+  number: 250,
+  type: "px",
+  defaultFr: 1,
+  defaultPx: 250,
+  minFr: 1,
+  maxFr: 10,
+  minPx: minRangeWidth,
+  maxPx: maxRangeWidth
+}
+const gridTemplateRows = {
+  number: 250,
+  type: "px",
+  defaultFr: 1,
+  defaultPx: 250,
+  minFr: 1,
+  maxFr: 10,
+  minPx: minRangeHeight,
+  maxPx: maxRangeHeight
+}
+
+const initItem = {
+  gridColumnStart: "",
+  gridColumnEnd: "",
+  gridRowStart: "",
+  gridRowEnd: "",
+  width: "200",
+  height: "",
+  justifySelf: "",
+  alignSelf: ""
+}
+
 
 const Item = (function() {
   const Contain = styled.div`
@@ -17,8 +51,8 @@ const Item = (function() {
       grid-column-end: ${styled.gridColumnEnd};
       grid-row-start: ${styled.gridRowStart};
       grid-row-end: ${styled.gridRowEnd};
-      justify-self: ${styled.justifySelf}
-      align-self: ${styled.alignSelf}
+      justify-self: ${styled.justifySelf};
+      align-self: ${styled.alignSelf};
       width: ${styled.width.length > 1 ? styled.width : ""}px;
       height: ${styled.height}px;
     `}
@@ -76,6 +110,7 @@ const Item = (function() {
       <SelectContain>
         <Label>{label}</Label>
         <Select value={item[type]} onChange={e => setItem({ [type]: e.target.value })}>
+          <Option value="">无</Option>
           <Option value="stretch">stretch</Option>
           <Option value="start">start</Option>
           <Option value="end">end</Option>
@@ -94,16 +129,6 @@ const Item = (function() {
     height: "height(px)"
   }
 
-  const initItem = {
-    gridColumnStart: "",
-    gridColumnEnd: "",
-    gridRowStart: "",
-    gridRowEnd: "",
-    width: "",
-    height: "",
-    justifySelf: "stretch",
-    alignSelf: "stretch"
-  }
 
   return ({ index }) => {
     const [item, setItem] = useReducer((preItem, nextItem) => ({ ...preItem, ...nextItem }), initItem)
@@ -150,6 +175,8 @@ const Contain = (function() {
       align-items: ${styled.alignItems};
       justify-content: ${styled.justifyContent};
       align-content: ${styled.alignContent};
+      width: ${styled.containWidth}px;
+      height: ${styled.containHeight}px;
     `}
   `
 
@@ -167,7 +194,7 @@ const Contain = (function() {
 
 const Right = (function() {
   const Right = styled.div`
-    flex: 1;
+    flex: 1.5;
   `
 
   const Flex = styled.div`
@@ -187,6 +214,11 @@ const Right = (function() {
     margin: 0 5px;
   `
 
+  const Input = styled.input`
+    flex: none;
+    width: 60px;
+  `
+
   const Number = styled.span`
     display: inline-block;
     width: 30px;
@@ -199,6 +231,11 @@ const Right = (function() {
     flex: none;
   `
 
+  const DivValue = styled.div`
+    width: 50px;
+  `;
+  
+
   return () => {
     const { state, setState, setInitState } = useContext(StateContext)
 
@@ -210,6 +247,16 @@ const Right = (function() {
             <Number>{state.count}</Number>
             <Button onClick={e => setState({ count: state.count + 1 })}>+</Button>
             <Button onClick={e => setState({ count: state.count ? state.count - 1 : 0 })}>-</Button>
+          </FlexItem>
+          <FlexItem>
+            <Label>容器的宽度:</Label>
+            <Input type="range" min={minContainWidth} max={maxContainWidth} value={state.containWidth} onChange={e => setState({containWidth: e.target.value})}></Input>
+            <DivValue>{state.containWidth}px</DivValue>
+          </FlexItem>
+          <FlexItem>
+            <Label>容器的高度:</Label>
+            <Input type="range" min={minContainHeight} max={maxContainHeight} value={state.containHeight} onChange={e => setState({containHeight: e.target.value})}></Input>
+            <DivValue>{state.containHeight}px</DivValue>
           </FlexItem>
           <Button onClick={setInitState}>容器重置</Button>
           <Button onClick={() => setState({ ...state, resetFlag: !state.resetFlag })}>
@@ -312,26 +359,8 @@ const Left = (function() {
   }
 
   const initState = {
-    gridTemplateColumns: {
-      number: 1,
-      type: "fr",
-      defaultFr: 1,
-      defaultPx: 110,
-      minFr: 1,
-      maxFr: 10,
-      minPx: minWidth,
-      maxPx: maxWidth
-    },
-    gridTemplateRows: {
-      number: 1,
-      type: "fr",
-      defaultFr: 1,
-      defaultPx: 200,
-      minFr: 1,
-      maxFr: 10,
-      minPx: minHeight,
-      maxPx: maxHeight
-    }
+    gridTemplateColumns,
+    gridTemplateRows
   }
 
   const gapList = ["gridRowGap", "gridColumnGap"]
@@ -470,88 +499,28 @@ const App = (function() {
 
   const initState = {
     count,
-    minWidth,
-    maxWidth,
-    minHeight,
-    maxHeight,
-    gridTemplateColumns: [
-      {
-        number: 1,
-        type: "fr",
-        defaultFr: 1,
-        defaultPx: 110,
-        minFr: 1,
-        maxFr: 10,
-        minPx: minWidth,
-        maxPx: maxWidth
-      },
-      {
-        number: 1,
-        type: "fr",
-        defaultFr: 1,
-        defaultPx: 110,
-        minFr: 1,
-        maxFr: 10,
-        minPx: minWidth,
-        maxPx: maxWidth
-      },
-      {
-        number: 1,
-        type: "fr",
-        defaultFr: 1,
-        defaultPx: 110,
-        minFr: 1,
-        maxFr: 10,
-        minPx: minWidth,
-        maxPx: maxWidth
-      }
-    ],
-    gridTemplateRows: [
-      {
-        number: 1,
-        type: "fr",
-        defaultFr: 1,
-        defaultPx: 200,
-        minFr: 1,
-        maxFr: 10,
-        minPx: minHeight,
-        maxPx: maxHeight
-      },
-      {
-        number: 1,
-        type: "fr",
-        defaultFr: 1,
-        defaultPx: 200,
-        minFr: 1,
-        maxFr: 10,
-        minPx: minHeight,
-        maxPx: maxHeight
-      },
-      {
-        number: 1,
-        type: "fr",
-        defaultFr: 1,
-        defaultPx: 200,
-        minFr: 1,
-        maxFr: 10,
-        minPx: minHeight,
-        maxPx: maxHeight
-      }
-    ],
+    minRangeWidth,
+    maxRangeWidth,
+    minRangeHeight,
+    maxRangeHeight,
+    gridTemplateColumns: Array.from(Array(Math.sqrt(count))).map(() => gridTemplateColumns),
+    gridTemplateRows: Array.from(Array(Math.sqrt(count))).map(() => gridTemplateRows),
     gridRowGap: [{ number: 10, type: "px", minPx: 10, maxPx: 50 }],
     gridColumnGap: [{ number: 10, type: "px", minPx: 10, maxPx: 50 }],
     gridAutoColumns: [
-      { number: 20, type: "px", minPx: minWidth, maxPx: maxWidth, defaultFr: 1, defaultPx: 110 }
+      { number: 20, type: "px", minPx: minRangeWidth, maxPx: maxRangeWidth, defaultFr: 1, defaultPx: 110 }
     ],
     gridAutoRows: [
-      { number: 20, type: "px", minPx: minHeight, maxPx: maxHeight, defaultFr: 1, defaultPx: 110 }
+      { number: 20, type: "px", minPx: minRangeHeight, maxPx: maxRangeHeight, defaultFr: 1, defaultPx: 110 }
     ],
     gridTemplateAreas: "",
-    justifyItems: "stretch",
-    alignItems: "stretch",
-    justifyContent: "stretch",
-    alignContent: "stretch",
+    justifyItems: "start",
+    alignItems: "start",
+    justifyContent: "start",
+    alignContent: "start",
     gridAutoFlow: "row",
+    containWidth,
+    containHeight,
     resetFlag: false
   }
 
