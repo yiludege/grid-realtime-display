@@ -187,17 +187,9 @@ const Right = (function() {
     margin: 0 5px;
   `
 
-  const Input = styled.input`
-    width: 60px;
-  `
-
   const Number = styled.span`
     display: inline-block;
     width: 30px;
-  `
-
-  const Span = styled.span`
-    display: inline-block;
   `
 
   const FlexItem = styled.div`
@@ -253,12 +245,6 @@ const Left = (function() {
     margin: 0 5px;
   `
 
-  const LabelInput = styled.label`
-    flex: none;
-    font-size: 18px;
-    font-weight: 600;
-    line-height: 60px;
-  `
   const ItemSelect = styled.div`
     flex: auto;
     display: flex;

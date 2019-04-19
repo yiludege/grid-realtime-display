@@ -10,3 +10,6 @@ ReactDOM.render(<App />, document.getElementById('root'));
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://bit.ly/CRA-PWA
 serviceWorker.unregister();
+
+console.log('%c既然已经点开了，给个start呗', 'color: red;font-size: 30px;')
+console.log('https://github.com/yiludege/grid-realtime-display')
