@@ -38,14 +38,13 @@ const initItem = {
   alignSelf: ""
 }
 
-
 const Item = (function() {
   const Contain = styled.div`
     font-size: 10px;
     background-color: white;
     border-radius: 6px;
     padding: 3px;
-    border: 1px solid grey;
+    border: 1px solid #000000;
     ${({ styled }) => css`
       grid-column-start: ${styled.gridColumnStart};
       grid-column-end: ${styled.gridColumnEnd};
@@ -56,12 +55,12 @@ const Item = (function() {
       width: ${styled.width.length > 1 ? styled.width : ""}px;
       height: ${styled.height}px;
     `}
-  `
+  `;
 
   const Input = styled.input`
     box-sizing: border-box;
     width: 100%;
-  `
+  `;
 
   const Number = styled.div`
     margin: 5px auto;
@@ -72,27 +71,27 @@ const Item = (function() {
     text-align: center;
     color: white;
     background-color: #4cc198;
-  `
+  `;
   const SelectContain = styled.div`
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
     padding: 3px;
-  `
+  `;
 
   const Label = styled.label`
     flex: auto;
-  `
+  `;
 
   const Select = styled.select`
     flex: auto;
-  `
+  `;
 
-  const Option = styled.option``
+  const Option = styled.option``;
 
   const InputItem = ({ label, type }) => {
-    const { item, setItem } = useContext(ItemContext)
+    const { item, setItem } = useContext(ItemContext);
     return (
       <Input
         type="number"
@@ -101,11 +100,11 @@ const Item = (function() {
         value={item[type]}
         onChange={e => setItem({ [type]: e.target.value })}
       />
-    )
-  }
+    );
+  };
 
   const SelectItem = ({ label, type }) => {
-    const { item, setItem } = useContext(ItemContext)
+    const { item, setItem } = useContext(ItemContext);
     return (
       <SelectContain>
         <Label>{label}</Label>
@@ -117,8 +116,8 @@ const Item = (function() {
           <Option value="center">center</Option>
         </Select>
       </SelectContain>
-    )
-  }
+    );
+  };
 
   const inputList = {
     gridColumnStart: "grid-column-start",
@@ -127,17 +126,16 @@ const Item = (function() {
     gridRowEnd: "grid-row-end",
     width: "width(px)",
     height: "height(px)"
-  }
-
+  };
 
   return ({ index }) => {
-    const [item, setItem] = useReducer((preItem, nextItem) => ({ ...preItem, ...nextItem }), initItem)
+    const [item, setItem] = useReducer((preItem, nextItem) => ({ ...preItem, ...nextItem }), initItem);
 
-    const { state } = useContext(StateContext)
+    const { state } = useContext(StateContext);
 
     useEffect(() => {
-      setItem(initItem)
-    }, [state.resetFlag])
+      setItem(initItem);
+    }, [state.resetFlag]);
 
     return (
       <ItemContext.Provider value={{ item, setItem }}>
@@ -150,20 +148,51 @@ const Item = (function() {
           <SelectItem label="align-self" type="alignSelf" />
         </Contain>
       </ItemContext.Provider>
-    )
-  }
-})()
+    );
+  };
+})();
 
-const Contain = (function() {
+const BackgroundItem = (function() {
+  const Contain = styled.div`
+    background: none;
+    font-size: 10px;
+    border: 1px dashed #666666;
+    padding: 3px;
+    justify-self: stretch;
+    align-self: stretch;
+  `;
+
+  return ({ index }) => {
+    const [item, setItem] = useReducer((preItem, nextItem) => ({ ...preItem, ...nextItem }), initItem);
+
+    const { state } = useContext(StateContext);
+
+    useEffect(() => {
+      setItem(initItem);
+    }, [state.resetFlag]);
+
+    return (
+      <ItemContext.Provider value={{ item, setItem }}>
+        <Contain styled={item}></Contain>
+      </ItemContext.Provider>
+    );
+  };
+})();
+
+const BackgroundContain = (function() {
   const Div = styled.div`
     display: grid;
     background-color: #4cc198;
     border-radius: 6px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
     padding: 6px;
     ${({ styled }) => css`
-      grid-template-columns: ${styled.gridTemplateColumns
-        .map(ele => ele.number + ele.type)
-        .join(" ")};
+      grid-template-columns: ${styled.gridTemplateColumns.map(ele => ele.number + ele.type).join(" ")};
       grid-template-rows: ${styled.gridTemplateRows.map(ele => ele.number + ele.type).join(" ")};
       grid-row-gap: ${styled.gridRowGap.map(ele => ele.number + ele.type).join(" ")};
       grid-column-gap: ${styled.gridColumnGap.map(ele => ele.number + ele.type).join(" ")};
@@ -178,19 +207,68 @@ const Contain = (function() {
       width: ${styled.containWidth}px;
       height: ${styled.containHeight}px;
     `}
-  `
+  `;
 
   return () => {
-    const { state } = useContext(StateContext)
+    const { state } = useContext(StateContext);
     return (
       <Div styled={state}>
         {[...Array(state.count)].map((ele, index) => (
-          <Item key={index} index={index} />
+          <BackgroundItem key={index} index={index} />
         ))}
       </Div>
-    )
-  }
-})()
+    );
+  };
+})();
+
+const Contain = (function() {
+  const Div = styled.div`
+    display: grid;
+    position: relative;
+    border-radius: 6px;
+    padding: 6px;
+    z-index: 2;
+    background-color:transparent;
+    ${({ styled }) => css`
+      grid-template-columns: ${styled.gridTemplateColumns.map(ele => ele.number + ele.type).join(" ")};
+      grid-template-rows: ${styled.gridTemplateRows.map(ele => ele.number + ele.type).join(" ")};
+      grid-row-gap: ${styled.gridRowGap.map(ele => ele.number + ele.type).join(" ")};
+      grid-column-gap: ${styled.gridColumnGap.map(ele => ele.number + ele.type).join(" ")};
+      grid-auto-columns: ${styled.gridAutoColumns.map(ele => ele.number + ele.type).join(" ")};
+      grid-auto-rows: ${styled.gridAutoRows.map(ele => ele.number + ele.type).join()};
+      grid-template-areas: ${styled.gridTemplateAreas};
+      grid-auto-flow: ${styled.gridAutoFlow};
+      justify-items: ${styled.justifyItems};
+      align-items: ${styled.alignItems};
+      justify-content: ${styled.justifyContent};
+      align-content: ${styled.alignContent};
+      width: 100%;
+      height: 100%;
+    `}
+  `;
+  const Wrap = styled.div`
+    position: relative;
+    ${({ styled }) => css`
+      width: ${styled.containWidth}px;
+      height: ${styled.containHeight}px;
+    `}
+  `;
+
+  return () => {
+    const { state } = useContext(StateContext);
+    return (
+      <Wrap styled={state}>
+        <Div styled={state}>
+          {[...Array(state.count)].map((ele, index) => (
+            <Item key={index} index={index} />
+          ))}
+        </Div>
+        <BackgroundContain></BackgroundContain>
+      </Wrap>
+    );
+  };
+})();
+
 
 const Right = (function() {
   const Right = styled.div`
